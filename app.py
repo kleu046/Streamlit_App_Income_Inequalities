@@ -1,47 +1,31 @@
-from dataclasses import dataclass
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
 
 from css_style import get_style
+from my_colors import MyColors
 from text import get_explaintext, get_mytext
 
 
-@dataclass
-class MyColors:
-    background: str = "#DBDADA"
-    plot_background: str = "#FFFFFF"
-    axis_color: str = "#008a6b"
-    line: str = "#005090"
-    marker: str = "#005090"
-    grid: str = "#f2eeee"
-    lines: tuple = (
-        "#005090",
-        "#EF0070",
-        "#c7ba0b",
+def set_plt_rcParams(plt):
+    plt.rcParams.update(
+        {
+            # "font.family": "Helvetica Neue",
+            "font.size": 10,
+            "font.weight": "light",
+            "axes.labelweight": "light",
+            "axes.titlesize": 11,
+            "axes.titleweight": "light",
+            "xtick.labelsize": 10,
+            "ytick.labelsize": 10,
+            "figure.facecolor": MyColors.background,
+            "axes.facecolor": MyColors.plot_background,
+            "grid.color": MyColors.grid,
+            "lines.color": MyColors.line,
+            "lines.markerfacecolor": MyColors.marker,
+        }
     )
-
-    @staticmethod
-    def set_plt_rcParams(plt):
-        plt.rcParams.update(
-            {
-                "font.family": "Helvetica Neue",
-                "font.size": 10,
-                "font.weight": "light",
-                "axes.labelweight": "light",
-                "axes.titlesize": 11,
-                "axes.titleweight": "light",
-                "xtick.labelsize": 10,
-                "ytick.labelsize": 10,
-                "figure.facecolor": MyColors.background,
-                "axes.facecolor": MyColors.plot_background,
-                "grid.color": MyColors.grid,
-                "lines.color": MyColors.line,
-                "lines.markerfacecolor": MyColors.marker,
-            }
-        )
 
 
 def style_ax(ax: "matplotlib.axes.Axes") -> None:
@@ -69,7 +53,7 @@ def plot(
     if gini_type_eq not in ("gini_mi_eq", "gini_dhi_eq"):
         raise ValueError("gini_type_eq must be either 'gini_mi_eq' or 'gini_dhi_eq'")
 
-    MyColors.set_plt_rcParams(plt)
+    set_plt_rcParams(plt)
 
     min_year, max_year = data.Year.min(), data.Year.max()
     year_list = np.arange(min_year, max_year + 1, 1).tolist()
@@ -269,67 +253,23 @@ gini_type = st.sidebar.selectbox(
 country = st.sidebar.selectbox(
     "Select Country",
     data.Entity.unique().tolist(),
-    index=0,
+    index=data.Entity.unique().tolist().index("United Kingdom"),
 )
 
 country2 = st.sidebar.selectbox(
-    "Select Country 2",
+    "Select Another Country For Comparison",
     data.Entity.unique().tolist(),
-    index=1,
+    index=data.Entity.unique().tolist().index("United States"),
 )
 
 gini_type_eq = "gini_mi_eq" if gini_type == "Before Tax" else "gini_dhi_eq"
 
-# st.title("Income Inequality - Before and After Taxes")
-# st.header(f"Income Inequality - {gini_type}")
 
-# col1, spacer, col2 = st.columns([3, 0.1, 3])
-
-# with col1:
-#     st.subheader("Top 10 Income Equality")
-#     table_data = (
-#         most_recent_by_country[["Entity", "Year", gini_type_eq]]
-#         .nsmallest(10, gini_type_eq)
-#         .reset_index(drop=True)
-#         .set_index(np.arange(1, 11))
-#         .rename(
-#             columns={
-#                 "Year": "Year - Most Recent Data",
-#                 gini_type_eq: "Gini Coefficient",
-#             }
-#         )
-#     )
-#     table_data["Gini Coefficient"] = table_data["Gini Coefficient"].apply(
-#         lambda x: f"{x:.3f}"
-#     )
-#     st.table(table_data)
-
-# with col2:
-#     st.subheader("Top 10 Income Inequality")
-#     table_data = (
-#         most_recent_by_country[["Entity", "Year", gini_type_eq]]
-#         .nlargest(10, gini_type_eq)
-#         .reset_index(drop=True)
-#         .set_index(np.arange(1, 11))
-#         .rename(
-#             columns={
-#                 "Year": "Year - Most Recent Data",
-#                 gini_type_eq: "Gini Coefficient",
-#             }
-#         )
-#     )
-#     table_data["Gini Coefficient"] = table_data["Gini Coefficient"].apply(
-#         lambda x: f"{x:.3f}"
-#     )
-#     st.table(table_data)
-
-# st.write("")
-# st.write("")
-
-col1, col2, col3 = st.columns([0.5, 1.2, 0.5])
-with col2:
-    st.pyplot(plot(data, gini_type_eq, country, country2))
+st.pyplot(plot(data, gini_type_eq, country, country2))
 
 st.write(get_explaintext(), unsafe_allow_html=True)
+
 st.write("")
+st.write("")
+
 st.write(get_mytext(), unsafe_allow_html=True)
